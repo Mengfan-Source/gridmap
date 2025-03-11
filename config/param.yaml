@@ -1,0 +1,43 @@
+%YAML:1.0
+
+# PCD点云地图预处理
+pcd_path: "/home/cetc21/xmf/tempout/bags/fromX30/cetc21outdoor/jueying.pcd"    #  PCD点云地图绝对路径
+# 体素滤波是否
+vexel_flag: 0    #  是否使用体素滤波降采样
+voxel_filter_size: 0.1    #  栅格体素滤波边长
+#统计滤波
+statistic_flag: 1    #  是否使用统计滤波(默认为1)
+statictis_filter_kmeans: 20    #  统计滤波最近邻点数
+kmeans_factor: 4    #  统计滤波KMeans因子，用于控制KMeans的大小
+statictis_filter_thred: 0.3    #  P统计滤波的方差阈值
+thred_factor: 3    #  统计滤波方差阈值因子，用于控制方差阈值的大小
+#条件滤波
+pass_filter_maxHight: 5    #  条件滤波的最大高度值，也是点云地图转成栅格地图的最大点云高度值b      yuanshuju 2.5  大黑室内参数0.5
+pass_filter_minHight: 0.2    #  条件滤波的最小高度值，也是点云地图转成栅格地图的最小点云高度值  yaunshuju-0.60   大黑室内参数-1.73
+#RANSAC
+ransac_iters: 3000    #  去除地面点使用的RANSAC方法的迭代次数
+ransac_distance_thre: 0.1    #  RANSAC拟合地面的距离阈值
+#显示去除地面的点云
+pcl_viewer: 1    #  是否显示去除地面后的点云
+cloud_size_viewer: 1    #  点云显示时激光点的大小
+
+#  点云地图转栅格地图
+grid_resolution: 0.1    #  栅格地图分辨率
+grid_resolution_inverse: 10    #  栅格地图分辨率的逆
+grid_map_width: 4000   #  参数配置栅格地图的宽  yuanshuju 2400   大黑室内20
+grid_map_hight: 4000    #  参数配置栅格地图的高  yuanshuju 2400  大黑室内20
+min_points_In_pix: 1    #  每一像素最小点云数量
+max_points_In_pix: 2    #  每一像素最大点云数量
+save_origin_grid_map_flag: 1    #  是否保存从点云地图转成的原始栅格地图
+grid_map_occupied_thred: 0.5  # 默认值，栅格被占用阈值
+grid_map_free_thred: 0.2  # 默认值，栅格为空闲阈值
+grid_map_negate: 0  # 默认值
+
+#  栅格地图后处理
+save_image_path: "/home/cetc21/xmf/tempout/testgridmap"  # 路径最后不带“/”，保存栅格地图路径
+map_name: "testxmf"  #  保存目标栅格地图的名字
+is_mask_flag: 0  #  是否采用3*3掩膜操作
+is_gauss_blur_flag: 0  #  是否采用高斯滤波操作
+is_close_flag: 0  #  是否采用形态学闭操作
+median_blur_window_size: 3  #  采用中值滤波的窗口大小
+gauss_blur_window_size: 3  #  采用高斯滤波的窗口大小
