@@ -9,28 +9,58 @@ MapGenerator::MapGenerator (const MapGeneratorParamter& param) {
 
 void MapGenerator::Generate (const pcl::PointCloud<pcl::PointXYZI>& cloud)
 {
-        //长宽像素点个数，图像大小为mnMapHight x mnMapWidth，类型为CV_8UC1（单通道8位无符号整数），并初始化为全零。
-        mmgridMap = cv::Mat (this->mstruParam.mnMapHight, this->mstruParam.mnMapWidth, CV_8UC1, cv::Scalar::all (0));
+        double x_min = std::numeric_limits<double>::max();
+        double x_max = std::numeric_limits<double>::lowest();
+        double y_min = std::numeric_limits<double>::max();
+        double y_max = std::numeric_limits<double>::lowest();
 
         for (const auto& point : cloud)
         {
                 if (point.z < this->mstruParam.mfMinHeight || point.z > this->mstruParam.mfMaxHeight)
-                {
                         continue;
-                }
-                int x = static_cast<int>(point.x * this->mstruParam.mfResolutionInverse + this->mstruParam.mnMapWidth / 2);
-                int y = static_cast<int>(-point.y * this->mstruParam.mfResolutionInverse + this->mstruParam.mnMapHight / 2);
-                if (x < 0 || x >= this->mstruParam.mnMapWidth || y < 0 || y >= this->mstruParam.mnMapHight)
-                {
-                        continue;
-                }
-//对应的图像像素值自增，用于记录落在该栅格内的点数
-                mmgridMap.at<uchar> (y, x)++;
+
+                x_min = std::min(x_min, (double)point.x);
+                x_max = std::max(x_max, (double)point.x);
+                y_min = std::min(y_min, (double)point.y);
+                y_max = std::max(y_max, (double)point.y);
         }
-//将每个像素的计数值减去一个最小阈值mnMinPointsInPix，这可以用于去除栅格中的一些低值噪声。
+
+        x_min -= 1.0;
+        x_max += 1.0;
+        y_min -= 1.0;
+        y_max += 1.0;
+        this->mstruParam.x_min_pcl2 = x_min;
+        this->mstruParam.y_min_pcl2 = y_min;
+		// std::cerr << "x_min = " << x_min << ", x_max = " << x_max << ", y_min = " << y_min << ", y_max = " << y_max << std::endl;
+
+        int width  = static_cast<int>((x_max - x_min) * this->mstruParam.mfResolutionInverse);
+        int height = static_cast<int>((y_max - y_min) * this->mstruParam.mfResolutionInverse);
+
+        mmgridMap = cv::Mat(height, width, CV_8UC1, cv::Scalar::all(0));
+
+        double center_x = (x_min + x_max) * 0.5;
+        double center_y = (y_min + y_max) * 0.5;
+
+        for (const auto& point : cloud)
+        {
+                if (point.z < this->mstruParam.mfMinHeight || point.z > this->mstruParam.mfMaxHeight)
+                        continue;
+
+                int x = static_cast<int>((point.x - center_x) * this->mstruParam.mfResolutionInverse + width  / 2);
+                int y = static_cast<int>((center_y - point.y) * this->mstruParam.mfResolutionInverse + height / 2);
+
+                if (x < 0 || x >= width || y < 0 || y >= height)
+                        continue;
+
+                mmgridMap.at<uchar>(y, x)++;
+        }
+
         mmgridMap -= this->mstruParam.mnMinPointsInPix;
-        mmgridMap.convertTo (mmgridMap, CV_8UC1, -255.0 / (this->mstruParam.mnMaxPointsInPix - this->mstruParam.mnMinPointsInPix), 255);
+        mmgridMap.convertTo(mmgridMap, CV_8UC1,
+                -255.0 / (this->mstruParam.mnMaxPointsInPix - this->mstruParam.mnMinPointsInPix), 255);
+        
 }
+
 void MapGenerator::SaveGridMap () {
 
         if (!boost::filesystem::exists (this->mstruParam.mstrSaveMapPath))
@@ -46,8 +76,8 @@ void MapGenerator::SaveGridMap () {
         ofs << "image: " << this->mstruParam.mstrMapName << ".pgm" << std::endl;
         ofs << "resolution: " << this->mstruParam.mfResolution << std::endl;
         ofs << "origin: ["
-                << -this->mstruParam.mfResolution * this->mstruParam.mnMapWidth / 2 << ", "
-                << -this->mstruParam.mfResolution * this->mstruParam.mnMapHight / 2 << ", 0.0]" << std::endl;
+                << this->mstruParam.x_min_pcl2 << ", "
+                << this->mstruParam.y_min_pcl2 << ", 0.0]" << std::endl;
 
         ofs << "occupied_thresh: " << this->mstruParam.mfOccupiedThred << std::endl;
         ofs << "free_thresh: " << this->mstruParam.mfFreeThred << std::endl;

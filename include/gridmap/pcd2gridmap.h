@@ -20,6 +20,8 @@ typedef struct MapGeneratorParam {
 
         int mnMapWidth;    // 参数设置栅格地图的宽
         int mnMapHight;  //参数设置栅格地图的宽
+        double x_min_pcl2;
+        double y_min_pcl2;
 
 
         int mnMinPointsInPix;  // 每个像素的最小激光点数量

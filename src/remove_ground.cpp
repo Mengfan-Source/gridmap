@@ -13,6 +13,7 @@ RemoveGroundCloud::RemoveGroundCloud (const RemoveGroundParamter& param) {
 }
 
 void RemoveGroundCloud::Remove () {
+    // std::cout<<"pcd_path: "<<this->mstruParam.msPCDPath<<std::endl;
         if (pcl::io::loadPCDFile<pcl::PointXYZI> (this->mstruParam.msPCDPath, *mpCloud) == -1)
         {
                 printf ("%s", "In PCD Path, Failed to open the input cloud");
@@ -44,29 +45,51 @@ void RemoveGroundCloud::Remove () {
                 remove_discrete_points.setStddevMulThresh (this->mstruParam.mfStatisticFilterThre);
                 remove_discrete_points.filter (*mpCloudFilterOut);
         }
-        pcl::SACSegmentation<pcl::PointXYZI> seg;
-        pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
-        pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
-        seg.setOptimizeCoefficients (true);
-        seg.setModelType (pcl::SACMODEL_PLANE);
-        seg.setMethodType (pcl::SAC_RANSAC);
-        seg.setMaxIterations (this->mstruParam.mnRansacIters);
-        seg.setDistanceThreshold (this->mstruParam.mfRansacDistanceThre);//设置点到模型的最大允许距离，用于决定一个点是否属于该模型。
-        seg.setInputCloud (mpCloudFilterOut);
-        seg.segment (*inliers, *coefficients);
+        else{
+            if (!mpCloudFilterOut){
+                mpCloudFilterOut.reset(new pcl::PointCloud<pcl::PointXYZI>);
+            }
+            pcl::copyPointCloud(*mpCloudFilteredIn, *mpCloudFilterOut);
+        }
+        if(this->mstruParam.mbRansacFlag){
+            pcl::SACSegmentation<pcl::PointXYZI> seg;
+            pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+            pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+            seg.setOptimizeCoefficients (true);
+            seg.setModelType (pcl::SACMODEL_PLANE);
+            seg.setMethodType (pcl::SAC_RANSAC);
+            seg.setMaxIterations (this->mstruParam.mnRansacIters);
+            seg.setDistanceThreshold (this->mstruParam.mfRansacDistanceThre);//设置点到模型的最大允许距离，用于决定一个点是否属于该模型。
+            seg.setInputCloud (mpCloudFilterOut);
+            seg.segment (*inliers, *coefficients);
 
-        pcl::ExtractIndices<pcl::PointXYZI> extract;
-        extract.setInputCloud (mpCloudFilterOut);
-        extract.setIndices (inliers);
-        extract.setNegative (true);
-        extract.filter (*mpNoGroundPoints);
+            pcl::ExtractIndices<pcl::PointXYZI> extract;
+            extract.setInputCloud (mpCloudFilterOut);
+            extract.setIndices (inliers);
+            extract.setNegative (true);
+            extract.filter (*mpNoGroundPoints);
+        }
+        else{
+            if (!mpNoGroundPoints){
+                mpNoGroundPoints.reset(new pcl::PointCloud<pcl::PointXYZI>);
+            }
+            pcl::copyPointCloud(*mpCloudFilterOut, *mpNoGroundPoints);
+        }
+        if (this->mstruParam.mbStatisticFlag){
+            //再次对离散点进行统计滤波
+            pcl::StatisticalOutlierRemoval<pcl::PointXYZI> remove_outpoints;
+            remove_outpoints.setInputCloud (mpNoGroundPoints);
+            remove_outpoints.setMeanK (int (this->mstruParam.mnStatisticFilterKmeans / this->mstruParam.mnKmeansFactor));
+            remove_outpoints.setStddevMulThresh (this->mstruParam.mfStatisticFilterThre / this->mstruParam.mnStaticThredFactor);
+            remove_outpoints.filter (*mpNoGroundCloud);
+        }
+        else{
+            if (!mpNoGroundCloud){
+                mpNoGroundCloud.reset(new pcl::PointCloud<pcl::PointXYZI>);
+            }
+            pcl::copyPointCloud(*mpNoGroundPoints, *mpNoGroundCloud);
+        }
 
-        //再次对离散点进行统计滤波
-        pcl::StatisticalOutlierRemoval<pcl::PointXYZI> remove_outpoints;
-        remove_outpoints.setInputCloud (mpNoGroundPoints);
-        remove_outpoints.setMeanK (int (this->mstruParam.mnStatisticFilterKmeans / this->mstruParam.mnKmeansFactor));
-        remove_outpoints.setStddevMulThresh (this->mstruParam.mfStatisticFilterThre / this->mstruParam.mnStaticThredFactor);
-        remove_outpoints.filter (*mpNoGroundCloud);
 
         if (this->mstruParam.mbGroundCloudViewerFlag) {
                 pcl::visualization::PCLVisualizer::Ptr viewer (

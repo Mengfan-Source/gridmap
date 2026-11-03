@@ -31,6 +31,7 @@ typedef struct RemoveGroundParam {
         bool mbVoxelFlag;    //  是否进行体素降采样标志位
         bool mbStatisticFlag;    //  是否进行统计滤波标志位
         bool mbGroundCloudViewerFlag; //  是否查看非地面点云标志位
+        bool mbRansacFlag;          //是否进行Ransac地面点滤除标志位
         int mbGroundCloudViewerSize; //  是查看非地面点云时的激光点大小
         float mfVoxelFilterSize;   //  体素降采样的体素边长大小
         int mnStatisticFilterKmeans;   //  统计滤波的搜寻的近邻点数量

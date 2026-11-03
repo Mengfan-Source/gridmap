@@ -25,6 +25,7 @@ namespace gridmap
                         this->msParamPath = param_path;
                         cv::FileStorage fs(this->msParamPath, cv::FileStorage::READ);
                         this->mstruRemoveParamter.msPCDPath = (std::string)fs["pcd_path"];
+                        std::cout<<this->mstruRemoveParamter.msPCDPath<<std::endl;
                         this->mstruRemoveParamter.mfVoxelFilterSize = (float)fs["voxel_filter_size"];
                         this->mstruRemoveParamter.mnStatisticFilterKmeans = (int)fs["statictis_filter_kmeans"];
                         this->mstruRemoveParamter.mfStatisticFilterThre = (float)fs["statictis_filter_thred"];
@@ -32,6 +33,7 @@ namespace gridmap
                         this->mstruRemoveParamter.mfRansacDistanceThre = (float)fs["ransac_distance_thre"];
                         this->mstruRemoveParamter.mbVoxelFlag = (int)fs["vexel_flag"];
                         this->mstruRemoveParamter.mbStatisticFlag = (int)fs["statistic_flag"];
+                        this->mstruRemoveParamter.mbRansacFlag = (int)fs["ransac_flag"];
                         this->mstruRemoveParamter.mfMaxHight = (float)fs["pass_filter_maxHight"];
                         this->mstruRemoveParamter.mfMinHight = (float)fs["pass_filter_minHight"];
                         this->mstruRemoveParamter.mnKmeansFactor = (int)fs["kmeans_factor"];
