@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>gridmap</name>
+  <version>1.0.2</version>
+  <description>offline gridmap generation</description>
+  <maintainer email="15262133937@163.com">xmf</maintainer>
+</package>

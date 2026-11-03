@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.16)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(PACKAGE_NAME gridmap)
 project (${PACKAGE_NAME})
 
 set(CMAKE_CXX_STANDARD 14)
 set(cetc21 ${CMAKE_SOURCE_DIR}/lib)
+set(cetc21_cmakebuild ${CMAKE_SOURCE_DIR}/lib)
 
 find_package(PCL REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -13,6 +17,7 @@ include_directories( include
         ${PCL_INCLUDE_DIRS}
         ${CMAKE_SOURCE_DIR}/lib/include/    # lib文件夹中头文件和动态库的搜索路径
 )
+# set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/../../../../CmakeBuild CACHE PATH "Install path prefix, prepended onto install directories.")
 
 #编译成可执行文件
 # file(GLOB_RECURSE GRIDMAP_SRC "src/*.cpp" "main.cpp")
@@ -31,4 +36,4 @@ include_directories( include
 
 # 基于动态库编译成可执行文件
 add_executable(gridmap_lib main_lib.cpp)
-target_link_libraries(gridmap_lib ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} ${cetc21}/libgridmap.so)
+target_link_libraries(gridmap_lib ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} ${cetc21_cmakebuild}/libgridmap.so)

@@ -1,21 +1,15 @@
-#!/bin/sh
-
-build_dir=$(pwd)/build
-rm -rf ${build_dir}
-mkdir ${build_dir}
-cd ${build_dir}
+cp cmakelists/CMakeLists.pre CMakeLists.txt 
+rm -rf ./build
+mkdir build
+cd build
 cmake ..
-make
-# cp ${build_dir}/gridmap ${build_dir}/../gridmap
-cp ${build_dir}/gridmap_lib ${build_dir}/../gridmap_lib
-rm -rf ${build_dir}
+make -j7
+make install
+cd ../
+cp cmakelists/CMakeLists.back CMakeLists.txt 
+rm -rf ./build
+mkdir build
+cd build
+cmake ..
+make 
 
-# # 安装动态库脚本
-# build_dir=$(pwd)/build
-# rm -rf ${build_dir}
-# mkdir ${build_dir}
-# cd ${build_dir}
-# cmake ..
-# make
-# make install
-# rm -rf ${build_dir}
